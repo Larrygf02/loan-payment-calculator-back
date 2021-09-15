@@ -1,10 +1,10 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from services.process import calculate_payment
 
 router = Blueprint('calculator', __name__, url_prefix='/calculator')
 
-@router.route('/', methods=['GET'])
+@router.route('/', methods=['POST'])
 def simulate():
-    data = {
-        'message': 'Este metodo aun no esta implementado'
-    }
-    return jsonify(data)
+    data = request.get_json(force=True)
+    result = calculate_payment(data)
+    return jsonify(result)
