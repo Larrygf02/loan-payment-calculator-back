@@ -18,8 +18,10 @@ def calculate_with_simple_fee(data):
     fee = ((((1 + interest_rate)**loan_term) * interest_rate) / (((1 + interest_rate)**loan_term) -1)) * amount
     fees_paid = 0
     capital = amount
+    dates = get_dates_paid(loan_term)
+    dates = dates[1:]
     while fees_paid < loan_term:
-        fees_paid += 1
+        payday = dates[fees_paid]
         interest = interest_rate * capital
         amortization = fee - interest
         capital = capital - amortization
@@ -27,9 +29,11 @@ def calculate_with_simple_fee(data):
             'fee': round(fee,2),
             'interest': round(interest,2),
             'amortization': round(amortization,2),
-            'capital': round(capital,2)
+            'capital': round(capital,2),
+            'payday': formate_date(payday)
         }
         result.append(result_item)
+        fees_paid += 1
     return result
         
 def calculate_with_double_fee(data):
@@ -40,12 +44,8 @@ def calculate_with_double_fee(data):
     interest_rate = interest_rate / 100
     interest_per_day = (math.pow((1+interest_rate), (1/360)) - 1)
     dates = get_dates_paid(dues)
-    print(dates)
-    print(len(dates))
     fsas , difference_days = get_fsa(dates, dues, interest_per_day)
     dates = dates[1:]
-    print(fsas)
-    print(len(fsas))
     fee = amount / sum(fsas)
     fee = round(fee, 2)
     balance = amount
@@ -63,7 +63,7 @@ def calculate_with_double_fee(data):
             'interest': round(interest,2),
             'amortization': round(amortization,2),
             'capital': round(balance,2),
-            'payday': payday
+            'payday': formate_date(payday)
         }
         result.append(result_item)
     return result
@@ -101,3 +101,6 @@ def get_fsa(dates, dues, interest_per_day):
         difference_days.append(days)
         i+= 1
     return (fsas, difference_days)
+
+def formate_date(date):
+    return date.strftime("%Y-%m-%d")
