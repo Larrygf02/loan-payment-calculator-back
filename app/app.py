@@ -7,4 +7,4 @@ from services.server.routes import *
 
 if __name__ == "__main__":
     #app.run(host='localhost', port=APP_PORT, debug=False) develop
-    app.run()
+    app.run(host='0.0.0.0')
