@@ -40,7 +40,9 @@ def calculate_with_double_fee(data):
     interest_rate = (interest_rate / 12) / 100
     interest_per_day = (math.pow((1+interest_rate), (1/360)) - 1)
     dates = get_dates_paid(dues)
+    print(dates)
     fsas , difference_days = get_fsa(dates, dues, interest_per_day)
+    dates = dates[1:]
     print(fsas)
     fee = amount / sum(fsas)
     fee = round(fee, 2)
@@ -70,6 +72,7 @@ def get_dates_paid(dues):
     day = 28 if now.day > 28 else now.day
     month = now.month
     year = now.year
+    days.append(datetime(year, month, day))
     for _ in range(1, dues+1):
         if month == 12:
             month = 1
@@ -83,8 +86,8 @@ def get_fsa(dates, dues, interest_per_day):
     i = 0
     acummulate_days = 0
     fsas = []
-    days = []
-    while i > dues:
+    difference_days = []
+    while i <= (dues-1):
         payday = dates[i]
         days = (dates[i+1] - dates[i]).days
         acummulate_days += days
@@ -93,6 +96,6 @@ def get_fsa(dates, dues, interest_per_day):
         else:
             fsa = math.pow((1+interest_per_day), -interest_per_day)
         fsas.append(fsa)
-        days.append(days)
+        difference_days.append(days)
         i+= 1
-    return (fsas, days)
+    return (fsas, difference_days)
