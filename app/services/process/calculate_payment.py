@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+import math
+
 def run(data):
     is_double_fee = data.get('is_double_fee')
     if not is_double_fee:
@@ -31,17 +33,44 @@ def calculate_with_simple_fee(data):
     return result
         
 def calculate_with_double_fee(data):
+    result = []
+    amount = data.get('amount')
     dues = data.get('loan_term')
-    days = get_days_paid(dues)
-    print(days)
+    interest_rate = data.get('interest_rate')
+    interest_rate = (interest_rate / 12) / 100
+    interest_per_day = (math.pow((1+interest_rate), (1/360)) - 1)
+    dates = get_dates_paid(dues)
+    fsas , difference_days = get_fsa(dates, dues, interest_per_day)
+    print(fsas)
+    fee = amount / sum(fsas)
+    fee = round(fee, 2)
+    balance = amount
+    for i in range(dues):
+        interest = balance * (math.pow((1+interest_per_day), difference_days[i]) - 1)
+        payday = dates[i]
+        if payday.month == 6 or payday.month == 12:
+            fee_month = fee * 2
+        else:
+            fee_month = fee
+        amortization = fee_month - interest
+        balance -= amortization
+        result_item = {
+            'fee': fee_month,
+            'interest': round(interest,2),
+            'amortization': round(amortization,2),
+            'capital': round(balance,2),
+            'payday': payday
+        }
+        result.append(result_item)
+    return result
 
-def get_days_paid(dues):
+def get_dates_paid(dues):
     days = []
     now = datetime.now()
     day = 28 if now.day > 28 else now.day
     month = now.month
     year = now.year
-    for _ in range(1, dues):
+    for _ in range(1, dues+1):
         if month == 12:
             month = 1
             year += 1
@@ -49,4 +78,21 @@ def get_days_paid(dues):
             month += 1
         days.append(datetime(year, month, day))
     return days
-        
+
+def get_fsa(dates, dues, interest_per_day):
+    i = 0
+    acummulate_days = 0
+    fsas = []
+    days = []
+    while i > dues:
+        payday = dates[i]
+        days = (dates[i+1] - dates[i]).days
+        acummulate_days += days
+        if payday.month == 6 or payday.month == 12:
+            fsa = math.pow((1+interest_per_day), -interest_per_day) * 2
+        else:
+            fsa = math.pow((1+interest_per_day), -interest_per_day)
+        fsas.append(fsa)
+        days.append(days)
+        i+= 1
+    return (fsas, days)
