@@ -43,8 +43,9 @@ def calculate_with_double_fee(data):
     dues = data.get('loan_term')
     interest_rate = data.get('interest_rate')
     interest_rate = interest_rate / 100
+    disbursement_date = data.get('disbursement_date')
     interest_per_day = (math.pow((1+interest_rate), (1/360)) - 1)
-    dates = get_dates_paid(dues)
+    dates = get_dates_paid(dues, disbursement_date)
     fsas , difference_days = get_fsa(dates, dues, interest_per_day)
     dates = dates[1:]
     fee = amount / sum(fsas)
