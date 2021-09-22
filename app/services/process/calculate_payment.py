@@ -14,11 +14,12 @@ def calculate_with_simple_fee(data):
     amount = data.get('amount')
     loan_term = data.get('loan_term')
     interest_rate = data.get('interest_rate')
+    date = data.get('disbursement_date')
     interest_rate = (interest_rate / 12) / 100
     fee = ((((1 + interest_rate)**loan_term) * interest_rate) / (((1 + interest_rate)**loan_term) -1)) * amount
     fees_paid = 0
     capital = amount
-    dates = get_dates_paid(loan_term)
+    dates = get_dates_paid(loan_term, date)
     dates = dates[1:]
     while fees_paid < loan_term:
         payday = dates[fees_paid]
@@ -68,12 +69,13 @@ def calculate_with_double_fee(data):
         result.append(result_item)
     return result
 
-def get_dates_paid(dues):
+def get_dates_paid(dues, date):
     days = []
-    now = datetime.now()
-    day = 28 if now.day > 28 else now.day
-    month = now.month
-    year = now.year
+    #now = datetime.now()
+    disbursement_date = datetime.strptime(date, '%Y-%m-%d')
+    day = 28 if disbursement_date.day > 28 else disbursement_date.day
+    month = disbursement_date.month
+    year = disbursement_date.year
     days.append(datetime(year, month, day))
     for _ in range(1, dues+1):
         if month == 12:
